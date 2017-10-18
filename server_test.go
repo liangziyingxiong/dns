@@ -20,13 +20,23 @@ func HelloServer(w ResponseWriter, req *Msg) {
 	w.WriteMsg(m)
 }
 
-func HelloServerBadId(w ResponseWriter, req *Msg) {
+func HelloServerBadID(w ResponseWriter, req *Msg) {
 	m := new(Msg)
 	m.SetReply(req)
 	m.Id++
 
 	m.Extra = make([]RR, 1)
 	m.Extra[0] = &TXT{Hdr: RR_Header{Name: m.Question[0].Name, Rrtype: TypeTXT, Class: ClassINET, Ttl: 0}, Txt: []string{"Hello world"}}
+	w.WriteMsg(m)
+}
+
+func HelloServerEchoAddrPort(w ResponseWriter, req *Msg) {
+	m := new(Msg)
+	m.SetReply(req)
+
+	remoteAddr := w.RemoteAddr().String()
+	m.Extra = make([]RR, 1)
+	m.Extra[0] = &TXT{Hdr: RR_Header{Name: m.Question[0].Name, Rrtype: TypeTXT, Class: ClassINET, Ttl: 0}, Txt: []string{remoteAddr}}
 	w.WriteMsg(m)
 }
 
@@ -548,7 +558,7 @@ func TestHandlerCloseTCP(t *testing.T) {
 				return
 			}
 			time.Sleep(time.Second / 10)
-			tries += 1
+			tries++
 			goto exchange
 		}
 	}()
